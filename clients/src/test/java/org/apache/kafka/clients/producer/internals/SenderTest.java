@@ -542,6 +542,16 @@ public class SenderTest {
     }
 
     @Test
+    public void testTransactionalManagerShutdownWhileWaitingForProducerIdRequest() throws Excpetion {
+
+    }
+
+    @Test
+    public void testRetriesOfProducerIdRequestForRetriableErrors() throws Exception {
+        
+    }
+
+    @Test
     public void testCanRetryWithoutIdempotence() throws Exception {
         // do a successful retry
         Future<RecordMetadata> future = accumulator.append(tp0, 0L, "key".getBytes(), "value".getBytes(), null, null, MAX_BLOCK_TIMEOUT).future;
