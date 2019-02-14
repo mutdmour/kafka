@@ -542,14 +542,48 @@ public class SenderTest {
     }
 
     @Test
-    public void testTransactionalManagerShutdownWhileWaitingForProducerIdRequest() throws Excpetion {
+    public void testTransactionalManagerShutdownWhileWaitingForProducerIdRequest() throws Exception {
+        final long producerId = 343434L;
+        client = spy(new MockClient(time, metadata));
 
+        TransactionManager transactionManager = new TransactionManager();
+        setupWithTransactionState(transactionManager);
+
+        prepareAndReceiveInitProducerId(producerId, Errors.KAFKA_STORAGE_ERROR);
+
+        InOrder inOrder = inOrder(client);
+        inOrder.verify(client, atLeastOnce()).ready(any(), anyLong());
     }
 
     @Test
     public void testRetriesOfProducerIdRequestForRetriableErrors() throws Exception {
-        
+
     }
+
+//    @Test
+//    public void testResetNextBatchExpiry() throws Exception {
+//        client = spy(new MockClient(time, metadata));
+//
+//        setupWithTransactionState(null);
+//
+//        accumulator.append(tp0, 0L, "key".getBytes(), "value".getBytes(), null, null,
+//                MAX_BLOCK_TIMEOUT);
+//
+//        sender.run(time.milliseconds());
+//        sender.run(time.milliseconds());
+//        time.setCurrentTimeMs(time.milliseconds() + accumulator.getDeliveryTimeoutMs() + 1);
+//        sender.run(time.milliseconds());
+//
+//        InOrder inOrder = inOrder(client);
+//        inOrder.verify(client, atLeastOnce()).ready(any(), anyLong());
+//        inOrder.verify(client, atLeastOnce()).newClientRequest(anyString(), any(), anyLong(), anyBoolean(), anyInt(),
+//                any());
+//        inOrder.verify(client, atLeastOnce()).send(any(), anyLong());
+//        inOrder.verify(client).poll(eq(0L), anyLong());
+//        inOrder.verify(client).poll(eq(accumulator.getDeliveryTimeoutMs()), anyLong());
+//        inOrder.verify(client).poll(geq(1L), anyLong());
+//
+//    }
 
     @Test
     public void testCanRetryWithoutIdempotence() throws Exception {
