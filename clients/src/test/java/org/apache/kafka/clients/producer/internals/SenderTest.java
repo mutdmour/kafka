@@ -47,6 +47,7 @@ import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.ClusterAuthorizationException;
 import org.apache.kafka.common.errors.NetworkException;
+import org.apache.kafka.common.errors.KafkaStorageException;
 import org.apache.kafka.common.errors.OutOfOrderSequenceException;
 import org.apache.kafka.common.errors.RecordTooLargeException;
 import org.apache.kafka.common.errors.TimeoutException;
@@ -103,6 +104,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 
 public class SenderTest {
 
@@ -549,10 +551,14 @@ public class SenderTest {
         TransactionManager transactionManager = new TransactionManager();
         setupWithTransactionState(transactionManager);
 
-        prepareAndReceiveInitProducerId(producerId, Errors.KAFKA_STORAGE_ERROR);
+        prepareToReceiveInitProducerId(producerId, Errors.KAFKA_STORAGE_ERROR);
+        prepareAndReceiveInitProducerId(producerId, Errors.NONE);
 
-        InOrder inOrder = inOrder(client);
-        inOrder.verify(client, atLeastOnce()).ready(any(), anyLong());
+//        InOrder inOrder = inOrder(client);
+//        inOrder.verify(client, times(1));
+//        assertTrue(transactionManager.hasError());
+        assertTrue(transactionManager.lastError() instanceof KafkaStorageException);
+//        assertTrue(metadata.updateRequested());
     }
 
     @Test
@@ -2284,6 +2290,11 @@ public class SenderTest {
     }
 
     private void prepareAndReceiveInitProducerId(long producerId, Errors error) {
+        prepareToReceiveInitProducerId(producerId, error);
+        sender.run(time.milliseconds());
+    }
+
+    private void prepareToReceiveInitProducerId(long producerId, Errors error) {
         short producerEpoch = 0;
         if (error != Errors.NONE)
             producerEpoch = RecordBatch.NO_PRODUCER_EPOCH;
@@ -2294,7 +2305,6 @@ public class SenderTest {
                 return body instanceof InitProducerIdRequest && ((InitProducerIdRequest) body).transactionalId() == null;
             }
         }, new InitProducerIdResponse(0, error, producerId, producerEpoch));
-        sender.run(time.milliseconds());
     }
 
     private void doInitTransactions(TransactionManager transactionManager, ProducerIdAndEpoch producerIdAndEpoch) {
