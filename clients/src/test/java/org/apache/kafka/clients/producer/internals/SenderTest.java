@@ -544,6 +544,7 @@ public class SenderTest {
 
     @Test
     public void testTransactionalManagerShutdownWhileWaitingForProducerIdRequest() throws Exception {
+        //tbd
         final long producerId = 343434L;
         client = spy(new MockClient(time, metadata));
 
@@ -551,8 +552,6 @@ public class SenderTest {
         setupWithTransactionState(transactionManager);
 
         prepareToReceiveInitProducerId(producerId, Errors.KAFKA_STORAGE_ERROR);
-        prepareAndReceiveInitProducerId(producerId, Errors.CLUSTER_AUTHORIZATION_FAILED);
-
         assertTrue(metadata.updateRequested());
     }
 
