@@ -104,7 +104,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 
 public class SenderTest {
 
@@ -552,18 +551,12 @@ public class SenderTest {
         setupWithTransactionState(transactionManager);
 
         prepareToReceiveInitProducerId(producerId, Errors.KAFKA_STORAGE_ERROR);
-        prepareAndReceiveInitProducerId(producerId, Errors.NONE);
+        prepareAndReceiveInitProducerId(producerId, Errors.CLUSTER_AUTHORIZATION_FAILED);
 
 //        InOrder inOrder = inOrder(client);
 //        inOrder.verify(client, times(1));
 //        assertTrue(transactionManager.hasError());
-        assertTrue(transactionManager.lastError() instanceof KafkaStorageException);
-//        assertTrue(metadata.updateRequested());
-    }
-
-    @Test
-    public void testRetriesOfProducerIdRequestForRetriableErrors() throws Exception {
-
+        assertTrue(metadata.updateRequested());
     }
 
 //    @Test
